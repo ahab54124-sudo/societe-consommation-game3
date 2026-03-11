@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr>
+
+<head>
+
+<meta charset="UTF-8">
+<title>Jeu société de consommation</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+}
+
+.box{
+background:white;
+width:600px;
+margin:auto;
+padding:20px;
+margin-top:20px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+button{
+padding:10px;
+margin:5px;
+cursor:pointer;
+}
+
+.option{
+display:block;
+margin:5px;
+padding:10px;
+border:1px solid gray;
+border-radius:5px;
+cursor:pointer;
+}
+
+.option:hover{
+background:#ddd;
+}
+
+#timer{
+color:red;
+font-size:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🎮 Jeu : Société de consommation</h1>
+
+<div class="box" id="home">
+
+<input id="name" placeholder="Votre nom">
+
+<br><br>
+
+<button onclick="startQuiz()">Commencer</button>
+
+<br><br>
+
+<h3>Voir résultats</h3>
+
+<input id="codeInput" placeholder="Entrer votre code">
+
+<button onclick="showResult()">Voir</button>
+
+<br><br>
+
+<button onclick="adminLogin()">Admin</button>
+
+</div>
+
+<div class="box" id="quiz" style="display:none">
+
+<div id="timer">4:00</div>
+
+<h3 id="question"></h3>
+
+<div id="options"></div>
+
+</div>
+
+<div class="box" id="result" style="display:none"></div>
+
+<div class="box" id="admin" style="display:none"></div>
+
+<script>
+
+let questions=[
+
+{q:"Tu as 50 dinars samedi.",o:["Jeu vidéo","Café amis","Livre","Épargne","Don","Choses inutiles"],p:[5,6,9,8,10,2],correct:"E"},
+
+{q:"Publicité nouveau téléphone.",o:["Acheter","Attendre promo","Besoin","Comparer","Garder","Impressionner"],p:[3,5,9,8,10,1],correct:"E"},
+
+{q:"Beaucoup temps libre.",o:["Publicités","Jeux","Article consommation","Sport","Apprendre","Acheter inutile"],p:[3,5,9,8,10,2],correct:"E"},
+
+{q:"Tu as 100 dinars.",o:["Cigarettes","Drogue","Vêtements","Épargne","Don","Jeux"],p:[0,0,6,9,10,4],correct:"E"},
+
+{q:"Ami dit marque chère.",o:["Croire","Acheter cher","Marque normale","Pas important","Garder","Critiquer consommation"],p:[2,4,7,9,8,10],correct:"F"},
+
+{q:"Grande publicité.",o:["Acheter beaucoup","Acheter inutile","Acheter une chose","Réfléchir","Rien acheter","Analyser pub"],p:[3,4,7,9,8,10],correct:"F"},
+
+{q:"Temps soir.",o:["Publicités","Jeux","Film","Lire","Langue","Bénévolat"],p:[2,4,6,8,9,10],correct:"F"},
+
+{q:"Tu as 30 dinars.",o:["Fast food","Bonbons","Livre","Jeu","Épargne","Cadeau ami"],p:[5,4,9,6,8,10],correct:"F"},
+
+{q:"Amis achètent cher.",o:["Imiter","Essayer imiter","Moins cher","Pas intéressé","Discuter","Chacun libre"],p:[2,4,7,8,10,6],correct:"E"},
+
+{q:"Temps libre.",o:["Centre commercial","Café","Sport","Lire","Apprendre","Aider famille"],p:[4,5,8,9,10,9],correct:"E"},
+
+{q:"Publicité convainc.",o:["Acheter","Réfléchir","Comparer","Lire avis","Pas confiance","Analyser"],p:[3,6,8,9,8,10],correct:"F"},
+
+{q:"Plus argent.",o:["Tout dépenser","Jeux","Vêtements","Épargne","Investissement","Don"],p:[2,5,6,8,10,9],correct:"E"},
+
+{q:"Produit publicité.",o:["Acheter","Essayer","Besoin","Comparer","Pas acheter","Analyser"],p:[3,5,8,9,9,10],correct:"F"},
+
+{q:"Temps amis.",o:["Shopping","Café","Sport","Discussion","Projet","Bénévolat"],p:[4,5,8,7,9,10],correct:"F"},
+
+{q:"Tu as 200 dinars.",o:["Jeux","Vêtements","Téléphone","Épargne","Projet","Don"],p:[5,6,3,8,10,9],correct:"E"}
+
+]
+
+let current=0
+let score=0
+let answers=[]
+let player=""
+
+function startQuiz(){
+
+player=document.getElementById("name").value
+
+if(player==""){
+alert("Entrez votre nom")
+return
+}
+
+document.getElementById("home").style.display="none"
+document.getElementById("quiz").style.display="block"
+
+showQuestion()
+startTimer()
+
+}
+
+function showQuestion(){
+
+let q=questions[current]
+
+document.getElementById("question").innerText="Question "+(current+1)+" : "+q.q
+
+let html=""
+
+q.o.forEach((op,i)=>{
+
+html+="<div class='option' onclick='choose("+i+")'>"+String.fromCharCode(65+i)+" - "+op+"</div>"
+
+})
+
+document.getElementById("options").innerHTML=html
+
+}
+
+function choose(i){
+
+score+=questions[current].p[i]
+
+answers.push(String.fromCharCode(65+i))
+
+current++
+
+if(current<questions.length){
+
+showQuestion()
+
+}else{
+
+finish()
+
+}
+
+}
+
+function finish(){
+
+document.getElementById("quiz").style.display="none"
+
+let code="a.a."+Math.floor(1000+Math.random()*9000)
+
+let data={
+name:player,
+score:score,
+answers:answers,
+correct:questions.map(q=>q.correct)
+}
+
+localStorage.setItem(code,JSON.stringify(data))
+
+document.getElementById("result").style.display="block"
+
+document.getElementById("result").innerHTML=
+
+"<h2>Score : "+score+"/100</h2>"+
+"<p>Votre code : <b>"+code+"</b></p>"+
+"<p>Utilisez ce code pour voir votre résultat.</p>"
+
+}
+
+function showResult(){
+
+let code=document.getElementById("codeInput").value
+
+let data=JSON.parse(localStorage.getItem(code))
+
+if(!data){
+
+alert("Code incorrect")
+return
+
+}
+
+document.getElementById("home").style.display="none"
+document.getElementById("result").style.display="block"
+
+document.getElementById("result").innerHTML=
+
+"<h2>Nom : "+data.name+"</h2>"+
+"<h3>Score : "+data.score+"/100</h3>"+
+"<p>Vos réponses : "+data.answers.join(" ")+"</p>"+
+"<p>Réponses correctes : "+data.correct.join(" ")+"</p>"
+
+}
+
+function adminLogin(){
+
+let pass=prompt("Mot de passe admin")
+
+if(pass!="admin123"){
+
+alert("Wrong password")
+return
+
+}
+
+let keys=Object.keys(localStorage)
+
+let html="<h2>Résultats joueurs</h2>"
+
+keys.forEach(k=>{
+
+if(k.startsWith("a.a.")){
+
+let d=JSON.parse(localStorage.getItem(k))
+
+html+="<p>"+k+" | "+d.name+" | "+d.score+"</p>"
+
+}
+
+})
+
+document.getElementById("home").style.display="none"
+document.getElementById("admin").style.display="block"
+
+document.getElementById("admin").innerHTML=html
+
+}
+
+let time=240
+
+function startTimer(){
+
+let timer=setInterval(()=>{
+
+time--
+
+let m=Math.floor(time/60)
+let s=time%60
+
+document.getElementById("timer").innerText=m+":"+("0"+s).slice(-2)
+
+if(time<=0){
+
+clearInterval(timer)
+finish()
+
+}
+
+},1000)
+
+}
+
+</script>
+
+</body>
+</html>
